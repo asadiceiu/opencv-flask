@@ -31,3 +31,6 @@ test the camera: `raspistill -o test.jpg`
 
 or
 sudo apt-get install libopencv-dev python3-opencv
+
+### Install git: `sudo apt-get install git`
+
