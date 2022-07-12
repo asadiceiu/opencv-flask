@@ -1,7 +1,7 @@
 {% extends 'base.html' %}{% block content%}
 <div class="col-12">
-    <h2>Video Title</h2>
-    <img style="padding: 10px" src="{{url_for('video')}}">
+<h2>Camera Feed</h2>
+    <img style="padding: 10px" src="{{url_for('video',video_type='index')}}">
 </div>
 
 {% endblock %}

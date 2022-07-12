@@ -1,0 +1,7 @@
+{% extends 'base.html' %}{% block content%}
+<div class="col-12">
+<h2>Camera Feed: Optical Flow</h2>
+    <img style="padding: 10px" src="{{url_for('video',video_type='opticalflow')}}">
+</div>
+
+{% endblock %}

@@ -33,13 +33,24 @@ class OpticalFlowInfo:
 
 
 class VideoCap:
-    def __init__(self):
-        self.vs = cv2.VideoCapture(0)
+    def __init__(self, video_path=None, refresh_timeout: int = 500):
+        """
+        Creates a VideoCap object with the given video path.
+        :param video_path:
+        :param refresh_timeout:
+        """
+        self.refresh_timeout = refresh_timeout
+        self.vs = cv2.VideoCapture(video_path) if video_path is not None else cv2.VideoCapture(0)
         self.OFInfo = OpticalFlowInfo()
         self.n_frames = 0
         self.optical_flow_sparse()
 
     def optical_flow_sparse_setup(self, frame=None):
+        """
+        Sets up the optical flow sparse algorithm.
+        :param frame:
+        :return:
+        """
         if frame is None:
             ret, frame = self.vs.read()
             if not ret:
@@ -54,7 +65,12 @@ class VideoCap:
         return
 
     def optical_flow_sparse(self, frame: np.ndarray = None) -> None:
-        if self.n_frames % 1000 == 0:
+        """
+        Performs optical flow sparse algorithm.
+        :param frame:
+        :return:
+        """
+        if self.n_frames % self.refresh_timeout == 0:
             self.optical_flow_sparse_setup(frame=frame)
             self.n_frames = 0
         self.n_frames += 1
@@ -89,6 +105,21 @@ class VideoCap:
         self.vs.release()
 
     def get_frame(self):
+        """
+        Returns the current frame without any modification to it.
+        :return:
+        """
+        ret, frame = self.vs.read()
+        if not ret:
+            raise Exception("couldn't grab image frame")
+        ret, jpg = cv2.imencode(".jpg", frame)
+        return jpg.tobytes()
+
+    def get_opticalflow(self):
+        """
+        Returns the current optical flow frame.
+        :return:
+        """
         self.optical_flow_sparse()
         ret, jpg = cv2.imencode(".jpg", self.OFInfo.current_frame)
         return jpg.tobytes()
