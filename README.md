@@ -19,4 +19,15 @@ test the camera: `raspistill -o test.jpg`
 
 ## install opencv, numpy, flask
 `sudo apt-get update`
+`sudo apt-get upgrade`
 
+`sudo apt-get install libatlas-base-dev`
+
+`sudo apt-get install python3-pip`
+
+`sudo pip install opencv-python`
+`sudo pip install flask`
+`sudo pip install numpy --upgrade`
+
+or
+sudo apt-get install libopencv-dev python3-opencv
