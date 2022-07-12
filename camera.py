@@ -44,6 +44,9 @@ class VideoCap:
         self.OFInfo = OpticalFlowInfo()
         self.n_frames = 0
         self.optical_flow_sparse()
+        
+    def __del__(self):
+        self.vs.stop()
 
     def optical_flow_sparse_setup(self, frame=None):
         """
