@@ -21,12 +21,27 @@ def camera_frame(camera, video_type: str = "index"):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    title = "Video"
+    return render_template('index.html', title=title)
+
+@app.route('/start_record')
+def start_record():
+    cam.start_writing  = True
+    cam.setup_writer()
+    return {"status": "ok"}
+
+@app.route('/stop_record')
+def stop_record():
+    cam.start_writing = False
+    cam.stop_writer()
+    return {"status": "ok"}
+
 
 
 @app.route('/opticalflow')
 def opticalflow():
-    return render_template('opticalflow.html')
+    title = "Optical Flow"
+    return render_template('opticalflow.html', title=title)
 
 
 @app.route('/video/<string:video_type>')

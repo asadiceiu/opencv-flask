@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import Any
+from datetime import datetime
 
 import cv2
 import numpy as np
@@ -44,9 +45,7 @@ class VideoCap:
         self.OFInfo = OpticalFlowInfo()
         self.n_frames = 0
         self.optical_flow_sparse()
-        
-    def __del__(self):
-        self.vs.stop()
+
 
     def optical_flow_sparse_setup(self, frame=None):
         """
@@ -94,9 +93,9 @@ class VideoCap:
             for i, (new, old) in enumerate(zip(good_new, good_old)):
                 a, b = new.astype(np.int16).ravel()
                 c, d = old.astype(np.int16).ravel()
-                cv2.line(self.OFInfo.mask, (a, b), (c, d), self.OFInfo.color[i].tolist(), 2)
+                cv2.line(self.OFInfo.mask, (a, b), (c, d), self.OFInfo.color[i].tolist(), 1)
                 # cv2.imshow('Mask', mask)
-                cv2.circle(frame, (a, b), 5, self.OFInfo.color[i % 300].tolist(), -1)
+                cv2.circle(frame, (a, b), 3, self.OFInfo.color[i % 300].tolist(), -1)
             self.OFInfo.current_frame = cv2.add(frame, self.OFInfo.mask)
             self.OFInfo.last_gray = self.OFInfo.current_gray.copy()
             self.OFInfo.last_features = good_new.reshape(-1, 1, 2)
@@ -106,6 +105,32 @@ class VideoCap:
 
     def __del__(self):
         self.vs.release()
+        if self.writer is not None:
+            self.writer.release()
+        self.start_writing = False
+
+    def write_frame(self, frame: np.ndarray) -> None:
+        """
+        Writes the given frame to the video.
+        :param frame:
+        :return:
+        """
+        if self.writer is None:
+            self.setup_writer()
+            self.start_writing = True
+        self.writer.write(frame)
+        return
+
+    def stop_writer(self) -> None:
+        """
+        Stops the writer.
+        :return:
+        """
+        if self.writer is not None:
+            self.writer.release()
+        self.writer = None
+        self.start_writing = False
+        return
 
     def get_frame(self):
         """
@@ -116,6 +141,8 @@ class VideoCap:
         if not ret:
             raise Exception("couldn't grab image frame")
         ret, jpg = cv2.imencode(".jpg", frame)
+        if self.start_writing:
+            self.write_frame(frame)
         return jpg.tobytes()
 
     def get_opticalflow(self):
@@ -125,4 +152,6 @@ class VideoCap:
         """
         self.optical_flow_sparse()
         ret, jpg = cv2.imencode(".jpg", self.OFInfo.current_frame)
+        if self.start_writing:
+            self.write_frame(self.OFInfo.current_frame)
         return jpg.tobytes()

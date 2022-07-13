@@ -5,8 +5,63 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>OpenCV Flask Optical Flow Demo</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   </head>
   <body>
+  <style>
+      .navbarr {
+          overflow: hidden;
+          position: fixed;
+          width: 100%;
+          right: -75%;
+          margin: auto;
+          opacity:0.5;
+        }
+
+        .navbarr a {
+          float: left;
+          display: block;
+          color: #f2f2f2;
+          text-align: center;
+          padding: 14px 16px;
+          text-decoration: none;
+          font-size: 17px;
+        }
+
+        .navbarr a:hover {
+
+        }
+
+        .navbarr a.active {
+          background-color: #4CAF50;
+          color: white;
+        }
+
+
+        .lights-button{
+            float: right;
+        }
+
+        i.fa {
+          display: inline-block;
+          border-radius: 60px;
+          box-shadow: 0px 0px 2px #888;
+          padding: 0.5em 0.6em;
+
+
+        }
+
+
+        button {
+            background-color: Transparent;
+            background-repeat:no-repeat;
+            border: none;
+            cursor:pointer;
+            overflow: hidden;
+            outline:none;
+        }
+
+  </style>
     <nav class="navbar navbar-expand-lg bg-light">
       <div class="container-fluid">
         <a class="navbar-brand" href="#">
@@ -57,9 +112,55 @@
       </div>
     </nav>
     <div class="container">
+    <div class="col-12">
+    <div class="row">
+        <div class="col-6">
+            <h2>{{ title }}</h2>
+        </div>
+        <div class="col-6">
+            <div class="navbarr">
+                <div class="ignoreCall">
+                      <a href="#" id="stop-record" class="but_def">
+                          <button id="button">
+                              <i style="background: red; color: white;" class="fa fa-times fa-2x" aria-hidden="true"></i>
+                          </button>
+                     </a>
+                </div>
+
+                <div class="picture">
+                      <a href=# id="start-record" class="picture_class">
+                          <button id="take-picture-button">
+                              <i style="background: blue; color: white;" class="fa fa-camera fa-2x" aria-hidden="true"></i>
+                          </button>
+                     </a>
+                </div>
+        </div>
+            </div>
+
+    </div>
+    </div>
         {% block content%}
         {% endblock %}
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js" integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2" crossorigin="anonymous"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script type="text/javascript">
+      $(function() {
+          $('a#start-record').on('click', function(e) {
+            e.preventDefault()
+            $.getJSON('/start_record',
+                function(data) {});
+            return false;
+          });
+        });
+      $(function() {
+          $('a#stop-record').on('click', function(e) {
+            e.preventDefault()
+            $.getJSON('/stop_record',
+                function(data) {});
+            return false;
+          });
+        });
+  </script>
   </body>
 </html>
