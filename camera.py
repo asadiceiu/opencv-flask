@@ -59,6 +59,7 @@ class VideoCap:
         fourcc = cv2.VideoWriter_fourcc(*'MJPG')
         # creates a file name with current date and time from datetime module
         file_name = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".avi"
+        print("Video recording: " + file_name)
         self.writer = cv2.VideoWriter(file_name, fourcc, fps, (frame_width, frame_height))
         self.start_writing = True
         return
