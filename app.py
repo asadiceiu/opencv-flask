@@ -28,12 +28,14 @@ def index():
 def start_record():
     cam.start_writing  = True
     cam.setup_writer()
+    print("start record")
     return {"status": "ok"}
 
 @app.route('/stop_record')
 def stop_record():
     cam.start_writing = False
     cam.stop_writer()
+    print("stop record")
     return {"status": "ok"}
 
 
