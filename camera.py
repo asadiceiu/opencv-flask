@@ -40,13 +40,23 @@ class VideoCap:
         :param video_path:
         :param refresh_timeout:
         """
+        self.fgbg = None
+        self.OFInfo = None
         self.refresh_timeout = refresh_timeout
         self.vs = cv2.VideoCapture(video_path) if video_path is not None else cv2.VideoCapture(0)
-        self.OFInfo = OpticalFlowInfo()
         self.n_frames = 0
-        self.optical_flow_sparse()
+        self.current_frame = 0
+        self.total_frames = int(self.vs.get(cv2.CAP_PROP_FRAME_COUNT)) if video_path is not None else -1
         self.writer = None
         self.start_writing = False
+
+    def setup_background_subtraction(self):
+        """
+        Sets up the background subtraction.
+        :return:
+        """
+        self.fgbg = cv2.createBackgroundSubtractorMOG2()
+        return
 
     def setup_writer(self) -> None:
         """
@@ -59,11 +69,9 @@ class VideoCap:
         fourcc = cv2.VideoWriter_fourcc(*'MJPG')
         # creates a file name with current date and time from datetime module
         file_name = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".avi"
-        print("Video recording: " + file_name)
         self.writer = cv2.VideoWriter(file_name, fourcc, fps, (frame_width, frame_height))
         self.start_writing = True
         return
-
 
     def optical_flow_sparse_setup(self, frame=None):
         """
@@ -90,7 +98,7 @@ class VideoCap:
         :param frame:
         :return:
         """
-        if self.n_frames % self.refresh_timeout == 0:
+        if self.OFInfo is None or self.n_frames % self.refresh_timeout == 0:
             self.optical_flow_sparse_setup(frame=frame)
             self.n_frames = 0
         self.n_frames += 1
@@ -123,8 +131,10 @@ class VideoCap:
 
     def __del__(self):
         self.vs.release()
-        if self.writer is not None:
+        try:
             self.writer.release()
+        except:
+            pass
         self.start_writing = False
 
     def write_frame(self, frame: np.ndarray) -> None:
@@ -144,8 +154,10 @@ class VideoCap:
         Stops the writer.
         :return:
         """
-        if self.writer is not None:
+        try:
             self.writer.release()
+        except:
+            pass
         self.writer = None
         self.start_writing = False
         return
@@ -155,9 +167,15 @@ class VideoCap:
         Returns the current frame without any modification to it.
         :return:
         """
+        self.current_frame += 1
+        if 0 < self.total_frames <= self.current_frame:
+            self.current_frame = 0
+            self.vs.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
         ret, frame = self.vs.read()
         if not ret:
             raise Exception("couldn't grab image frame")
+
         ret, jpg = cv2.imencode(".jpg", frame)
         if self.start_writing:
             self.write_frame(frame)
@@ -166,10 +184,35 @@ class VideoCap:
     def get_opticalflow(self):
         """
         Returns the current optical flow frame.
-        :return:
+        :return
         """
+        self.current_frame += 1
+        if 0 < self.total_frames <= self.current_frame:
+            self.current_frame = 0
+            self.vs.set(cv2.CAP_PROP_POS_FRAMES, 0)
         self.optical_flow_sparse()
         ret, jpg = cv2.imencode(".jpg", self.OFInfo.current_frame)
         if self.start_writing:
             self.write_frame(self.OFInfo.current_frame)
+        return jpg.tobytes()
+
+    def get_background(self):
+        """
+        Returns the current background frame.
+        :return:
+        """
+
+        self.current_frame += 1
+        if 0 < self.total_frames <= self.current_frame:
+            self.current_frame = 0
+            self.vs.set(cv2.CAP_PROP_POS_FRAMES, 0)
+        ret, frame = self.vs.read()
+        if not ret:
+            raise Exception("couldn't grab image frame")
+        if self.fgbg is None:
+            self.setup_background_subtraction()
+        fgmask = self.fgbg.apply(frame)
+        ret, jpg = cv2.imencode(".jpg", fgmask)
+        if self.start_writing:
+            self.write_frame(fgmask)
         return jpg.tobytes()
