@@ -2,7 +2,7 @@ from flask import Flask, render_template, Response
 from camera import VideoCap
 
 app = Flask(__name__)
-cam = VideoCap(video_path='media/vi_0000_20220725_122016.mp4', refresh_timeout=500)
+cam = VideoCap(0) #video_path='media/vi_0000_20220725_122016.mp4', refresh_timeout=500)
 
 
 def camera_frame(camera, video_type: str = "index"):
